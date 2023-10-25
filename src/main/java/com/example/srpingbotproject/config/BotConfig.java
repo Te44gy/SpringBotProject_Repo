@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 //@PropertySource("application.properties")  // Откуда брать информацию/ресурсы
 @ConfigurationProperties(prefix = "bot")
-public class BotConfig
+public class BotConfig{
 
 
     @NotBlank
