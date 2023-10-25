@@ -65,17 +65,17 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return botConfig.getBotName();
+        return botConfig.getName();
     }
 
     @Override
     public String getBotToken() {
-        return botConfig.getBotToken(); //что делает этот токен и как конкретно происходит подключение программы к боту?
+        return botConfig.getToken(); //что делает этот токен и как конкретно происходит подключение программы к боту?
     }
 
 
     public Long getBotOwner(){
-        return Long.valueOf(botConfig.getBotOwner());
+        return Long.valueOf(botConfig.getOwner());
     }
  
     @Override

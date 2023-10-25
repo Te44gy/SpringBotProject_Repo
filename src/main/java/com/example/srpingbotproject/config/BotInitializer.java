@@ -15,11 +15,10 @@ public class BotInitializer {
     @Autowired
     TelegramBot telegramBot; // инициализируем бота
 
-    @EventListener(value = {ContextRefreshedEvent.class})           // это способ зарегистрировать обработчик события
+    @EventListener(value = {ContextRefreshedEvent.class})                               // это способ зарегистрировать обработчик события
     public void init(){
-          //??? посредник между приложением и сервером
         try{
-            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
+            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);  //??? посредник между приложением и сервером
             telegramBotsApi.registerBot(telegramBot);
         }
         catch (TelegramApiException tae){

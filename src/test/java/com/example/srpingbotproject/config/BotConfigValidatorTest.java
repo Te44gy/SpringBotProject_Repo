@@ -15,16 +15,15 @@ public class BotConfigValidatorTest {
 
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    private final List<String> required = Arrays.asList("botName", "botToken" +
-            "", "botOwner");
+    private final List<String> required = Arrays.asList("botName", "botToken", "botOwner");
 
 
     @Test
     public void testBotConfig(){
         var properties = new BotConfig();
-        properties.setBotName("Bot");
-        properties.setBotToken("123");
-        properties.setBotOwner("4444");
+        properties.setName("Bot");
+        properties.setToken("123");
+        properties.setOwner("4444");
         var errors = validator.validate(properties);
         Assertions.assertEquals(0, errors.size(), "Без ошибок");
 
