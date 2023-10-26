@@ -18,7 +18,7 @@ public class BotInitializer {
     @EventListener(value = {ContextRefreshedEvent.class})                               // это способ зарегистрировать обработчик события
     public void init(){
         try{
-            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);  //??? посредник между приложением и сервером
+            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);  // посредник между приложением и сервером
             telegramBotsApi.registerBot(telegramBot);
         }
         catch (TelegramApiException tae){

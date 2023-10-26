@@ -6,6 +6,8 @@ import com.example.srpingbotproject.model.TBUser;
 import com.example.srpingbotproject.model.reps.AdsRepository;
 import com.example.srpingbotproject.model.reps.TBUserRepository;
 import com.vdurmont.emoji.EmojiParser;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -27,14 +29,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-//@RequiredArgsConstructor //Почему тут не могу использовать его?
+@Slf4j
+//@RequiredArgsConstructor
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final TBUserRepository tbUserRepository;
     private final AdsRepository adsRepository;
-
-
-    final BotConfig botConfig;
+    private final BotConfig botConfig;
 
     static final String HELP_TEXT = "This bot is created to demonstrated Spring capabilities\n\n"+
             "press menu to see all available commands";
@@ -43,10 +44,12 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 
     public TelegramBot(TBUserRepository tbUserRepository, AdsRepository adsRepository, BotConfig botConfig){
+
         this.tbUserRepository = tbUserRepository;
         this.adsRepository = adsRepository;
-
         this.botConfig = botConfig;
+
+
         List<BotCommand> listOfCommands = new ArrayList<>();     //лист содержащий лист команд
         listOfCommands.add(new BotCommand("/start", "get a welcome message"));          //это команда есть и она добавится в список
 //        listOfCommands.add(new BotCommand("/myData", "get user data"));                                 //команды которые не прописаны видимо добавить нельзя
@@ -58,9 +61,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
         }
         catch (TelegramApiException tae) {
-            System.out.println("Ошибка выставления команд в бота: "+ tae.getMessage());
+            log.info("Ошибка выставления команд в бота: "+ tae.getMessage());
         }
-
     }
 
     @Override
@@ -75,11 +77,11 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 
     public Long getBotOwner(){
-        return Long.valueOf(botConfig.getOwner());
+         return Long.valueOf(botConfig.getOwner());
     }
  
     @Override
-    public void onUpdateReceived(Update update) { // Пришедшее сообщение
+    public void onUpdateReceived(Update update) {                   // Пришедшее сообщения
 
         if(update.hasMessage() && update.getMessage().hasText()){   //Убеждаемся что в пришедшем сообщении есть текст
             String messageText = update.getMessage().getText();
@@ -161,7 +163,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     private void registerUser(Message message) {
         if(tbUserRepository.findById(message.getChatId()).isEmpty()){
-            var chatId = message.getChatId();
+            Long chatId = message.getChatId();
             var chat = message.getChat();
             TBUser user = new TBUser();
             user.setChatId(chatId);
@@ -171,7 +173,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             user.setRegisterDate(new Timestamp(System.currentTimeMillis()));
 
             tbUserRepository.save(user);
-            System.out.println("пользователь сохранен: "+user);
+            log.info("пользователь сохранен: "+user);
 
         }
     }
@@ -214,7 +216,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             execute(message);
         }
         catch (TelegramApiException tae){
-            System.out.println("Произошла ошибка при отправке сообщения "+ tae.getMessage());
+            log.info("Произошла ошибка при отправке сообщения "+ tae.getMessage());
         }
 
 
@@ -224,8 +226,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         try{                                                   // Используем tryCatch при отправке потому что, что-то может пойти не так
             execute(message);
         }
-        catch (TelegramApiException tae){                      // Используем для логов, использовать sout это не профессионально
-            System.out.println("Произошла ошибка при отправке сообщения "+ tae.getMessage());
+        catch (TelegramApiException tae){
+            log.info("Произошла ошибка при отправке сообщения "+ tae.getMessage());
         }
     }
 
@@ -236,7 +238,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         var ads = adsRepository.findAll();
         var users = tbUserRepository.findAll();
-        System.out.println("Попытка отправки");
+        log.info("Попытка отправки");
 
         for(Ads ad:ads){
             for(TBUser user:users){
@@ -246,5 +248,9 @@ public class TelegramBot extends TelegramLongPollingBot {
                 executeMessage(message);
             }
         }
+    }
+
+    public boolean methodForTestsOnly(){
+        return tbUserRepository.findById(1276509851L).isPresent();
     }
 }

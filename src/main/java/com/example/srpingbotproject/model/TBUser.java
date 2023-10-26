@@ -4,12 +4,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import java.sql.Timestamp;
 
 @Entity
 @Data
+@AllArgsConstructor
+@Builder
 @Table(name="TelegramBotUsers")
 public class TBUser {
 
@@ -23,4 +27,8 @@ public class TBUser {
     private String userName;
 
     private Timestamp registerDate;
+
+    public TBUser() {
+
+    }
 }

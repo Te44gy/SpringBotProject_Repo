@@ -15,7 +15,7 @@ public class BotConfigValidatorTest {
 
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    private final List<String> required = Arrays.asList("botName", "botToken", "botOwner");
+    private final List<String> required = Arrays.asList("name", "token", "owner");
 
 
     @Test
@@ -31,7 +31,7 @@ public class BotConfigValidatorTest {
         errors = validator.validate(properties);
         ConstraintViolation[] constraintViolations  = errors.toArray(x -> new ConstraintViolation[x]);
         for(ConstraintViolation violation : constraintViolations){
-            Assertions.assertEquals("не должно быть пустым", violation.getMessage());   //Не понимаю почему ошибка на русском пишется
+            Assertions.assertEquals("не должно быть пустым", violation.getMessage());   //? Не понимаю почему ошибка на русском пишется
             Assertions.assertTrue(required.contains(violation.getPropertyPath().toString()));
         }
 
