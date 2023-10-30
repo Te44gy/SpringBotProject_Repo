@@ -37,7 +37,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final KeyboardMaker keyboardMaker;
     private final MessageService messageService;
 
-    public TelegramBot(TBUserRepository tbUserRepository, AdsRepository adsRepository, BotConfig botConfig, MessageService messageService, KeyboardMaker keyboardMaker, MessageService messageService1){
+
+    public TelegramBot(TBUserRepository tbUserRepository, AdsRepository adsRepository, BotConfig botConfig, MessageService messageService, KeyboardMaker keyboardMaker){
 
         this.tbUserRepository = tbUserRepository;
         this.adsRepository = adsRepository;
@@ -50,7 +51,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         listOfCommands.add(new BotCommand("/start", "get a welcome message"));          //это команда есть и она добавится в список
 //        listOfCommands.add(new BotCommand("/myData", "get user data"));                                 //команды которые не прописаны видимо добавить нельзя
         listOfCommands.add(new BotCommand("/help", "get bot info about using"));
-        listOfCommands.add(new BotCommand("/YesNo","yes and no buttons"));
+        listOfCommands.add(new BotCommand("/YesNo","yes and no buttons"));              //? Команды не выставляются
 
         try{
             this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
@@ -66,7 +67,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
     @Override
     public String getBotToken() {
-        return botConfig.getToken(); //что делает этот токен и как конкретно происходит подключение программы к боту?
+        return botConfig.getToken();           //что делает этот токен и как конкретно происходит подключение программы к боту?
     }
  
     @Override
@@ -86,9 +87,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                         .findFirst()
                         .map(m -> m.process(update))
                         .orElseGet(() ->  SendMessage.builder().text("Command was not recognized").chatId(chatId).build());
-                var messageToSendWithKeyboardMarkup = keyboardMaker.addReplyKeyboardMarkupToMessage(messageToSend);
-                executeMessage(messageToSendWithKeyboardMarkup);    //? Сделал дебагин и написано, что клавиатура выставлена, но почему-то не отображается в чате
-
+//                var messageToSendWithKeyboardMarkup = keyboardMaker.addReplyKeyboardMarkupToMessage(messageToSend);
+//                executeMessage(messageToSendWithKeyboardMarkup);    //? Сделал дебагин и написано, что клавиатура выставлена, но почему-то не отображается в чате
+                                                                      //? Криво работает, теперь оно сработало, но при этом не вылазят кнопки Yes, No
+                                                                      //? Почему метод создания меню сетки даже не используется, но сетка сохранена в чате???
+                    executeMessage(messageToSend);
 
         } else if
         (update.hasCallbackQuery()) {                          //Проверяем может в update передался какой-то айди кнопки ане текст сообщения

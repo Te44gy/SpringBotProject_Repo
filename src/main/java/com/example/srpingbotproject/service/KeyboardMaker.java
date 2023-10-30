@@ -34,7 +34,7 @@ public class KeyboardMaker {
         rowsInLIne.add(rowInLine);
 
         keyboardMarkup.setKeyboard(rowsInLIne);
-        sendMessage.setReplyMarkup(keyboardMarkup);          //Выставить разметку кнопок для сообщения
+        sendMessage.setReplyMarkup(keyboardMarkup);            //Выставить разметку кнопок для сообщения
         return sendMessage;
     }
 
