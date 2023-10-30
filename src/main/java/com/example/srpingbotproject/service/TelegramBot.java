@@ -1,32 +1,30 @@
 package com.example.srpingbotproject.service;
 
+import com.example.srpingbotproject.buttons.MyButtons;
+import com.example.srpingbotproject.buttons.NoButton;
+import com.example.srpingbotproject.buttons.YesButton;
+import com.example.srpingbotproject.commands.*;
 import com.example.srpingbotproject.config.BotConfig;
 import com.example.srpingbotproject.model.Ads;
 import com.example.srpingbotproject.model.TBUser;
 import com.example.srpingbotproject.model.reps.AdsRepository;
 import com.example.srpingbotproject.model.reps.TBUserRepository;
-import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
 
 @Component
 @Slf4j
@@ -36,26 +34,23 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final TBUserRepository tbUserRepository;
     private final AdsRepository adsRepository;
     private final BotConfig botConfig;
+    private final KeyboardMaker keyboardMaker;
+    private final MessageService messageService;
 
-    static final String HELP_TEXT = "This bot is created to demonstrated Spring capabilities\n\n"+
-            "press menu to see all available commands";
-    static final String NO_BUTTON = "NO_BUTTON";
-    static final String YES_BUTTON = "YES_BUTTON";
-
-
-    public TelegramBot(TBUserRepository tbUserRepository, AdsRepository adsRepository, BotConfig botConfig){
+    public TelegramBot(TBUserRepository tbUserRepository, AdsRepository adsRepository, BotConfig botConfig, MessageService messageService, KeyboardMaker keyboardMaker, MessageService messageService1){
 
         this.tbUserRepository = tbUserRepository;
         this.adsRepository = adsRepository;
         this.botConfig = botConfig;
+        this.keyboardMaker = keyboardMaker;
+        this.messageService = messageService;
 
 
         List<BotCommand> listOfCommands = new ArrayList<>();     //лист содержащий лист команд
         listOfCommands.add(new BotCommand("/start", "get a welcome message"));          //это команда есть и она добавится в список
 //        listOfCommands.add(new BotCommand("/myData", "get user data"));                                 //команды которые не прописаны видимо добавить нельзя
-//        listOfCommands.add(new BotCommand("/deleteData", "delete user data"));
         listOfCommands.add(new BotCommand("/help", "get bot info about using"));
-        listOfCommands.add(new BotCommand("/register","register"));
+        listOfCommands.add(new BotCommand("/YesNo","yes and no buttons"));
 
         try{
             this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
@@ -69,161 +64,57 @@ public class TelegramBot extends TelegramLongPollingBot {
     public String getBotUsername() {
         return botConfig.getName();
     }
-
     @Override
     public String getBotToken() {
         return botConfig.getToken(); //что делает этот токен и как конкретно происходит подключение программы к боту?
     }
-
-
-    public Long getBotOwner(){
-         return Long.valueOf(botConfig.getOwner());
-    }
  
     @Override
-    public void onUpdateReceived(Update update) {                   // Пришедшее сообщения
+    public void onUpdateReceived(Update update) {
 
-        if(update.hasMessage() && update.getMessage().hasText()){   //Убеждаемся что в пришедшем сообщении есть текст
+        if(update.hasMessage() && update.getMessage().hasText()){
             String messageText = update.getMessage().getText();
-            long chatId = update.getMessage().getChatId();          //Что бы что-то отправить мы должны знать чат айди на который нужно отправлять
-
-            if(messageText.contains("/send") && chatId==getBotOwner()){
-                var textToSend = EmojiParser.parseToUnicode(messageText.substring(6));
-                System.out.println(textToSend);
-                var users = tbUserRepository.findAll();
-                for (TBUser user: users){
-                    sendMessage(user.getChatId(), textToSend);
-                }
-
-            } else {
-                switch (messageText){
-
-                    case "/start": startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
-                        registerUser(update.getMessage());
-                        break;
-
-                    case "/help": sendMessage(chatId, HELP_TEXT);
-                        break;
-
-                    case "/register":
-
-                        register(chatId);
-                        break;
-
-                    default:
-                        sendMessage(chatId, "Command was not recognized");
-                }
-
-            }
+            long chatId = update.getMessage().getChatId();
 
 
-
-        } else if (update.hasCallbackQuery()) {  //Проверяем может в update передался какой-то айди кнопки ане текст сообщения
-            String callBackData = update.getCallbackQuery().getData();                 // Получай айди команды
-            long messageId = update.getCallbackQuery().getMessage().getMessageId();    // Получить айди сообщения, а не чата для редактирования сообщения при нажатии кнопок
-            long chatId = update.getCallbackQuery().getMessage().getChatId();
-            if(callBackData.equals(YES_BUTTON)){
-                executeEditMessageText("You pressed YES button", chatId, messageId);
-
-            }
-            else if(callBackData.equals(NO_BUTTON)){
-                executeEditMessageText("You pressed NO button", chatId, messageId);
-            }
-        }
-
-    }
-
-    private void register(long chatId) {
-        SendMessage message = new SendMessage();      // Специальный класс для отправки сообщений из библиотеки телеграмботс
-        message.setChatId(String.valueOf(chatId));
-        message.setText("Are u sure?");
-
-        InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();     //Класс для создания кнопок под сообщением
-        List<List<InlineKeyboardButton>> rowsInLIne = new ArrayList<>();      //Именно такой лист нужно дать в параметр ".setKeyboard метода"
-        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
-        var yesButton = new InlineKeyboardButton();
-        yesButton.setText("Yes");
-        yesButton.setCallbackData(YES_BUTTON);        //Это идентификатор, который помогает боту понять какая кнопка была нажата
-        var noButton = new InlineKeyboardButton();
-        noButton.setText("No");
-        noButton.setCallbackData(NO_BUTTON);
-
-        rowInLine.add(yesButton);
-        rowInLine.add(noButton);
-
-        rowsInLIne.add(rowInLine);
-
-        keyboardMarkup.setKeyboard(rowsInLIne);
-        message.setReplyMarkup(keyboardMarkup);         //Выставить разметку кнопок для сообщения
-        executeMessage(message);
+                List<MyBotCommand> listOfCommands = Arrays.asList(new StartCommand(tbUserRepository )
+                        , new HelpCommand()
+                        , new SendCommand(botConfig, tbUserRepository, this)
+                        , new YesNoCommand(keyboardMaker));
+                var messageToSend = listOfCommands.stream()
+                        .filter(m -> m.checkMessage(messageText))
+                        .findFirst()
+                        .map(m -> m.process(update))
+                        .orElseGet(() ->  SendMessage.builder().text("Command was not recognized").chatId(chatId).build());
+                var messageToSendWithKeyboardMarkup = keyboardMaker.addReplyKeyboardMarkupToMessage(messageToSend);
+                executeMessage(messageToSendWithKeyboardMarkup);    //? Сделал дебагин и написано, что клавиатура выставлена, но почему-то не отображается в чате
 
 
-
-    }
-
-    private void registerUser(Message message) {
-        if(tbUserRepository.findById(message.getChatId()).isEmpty()){
-            Long chatId = message.getChatId();
-            var chat = message.getChat();
-            TBUser user = new TBUser();
-            user.setChatId(chatId);
-            user.setFirstName(chat.getFirstName());
-            user.setLastName(chat.getLastName());
-            user.setUserName(chat.getUserName());
-            user.setRegisterDate(new Timestamp(System.currentTimeMillis()));
-
-            tbUserRepository.save(user);
-            log.info("пользователь сохранен: "+user);
-
+        } else if
+        (update.hasCallbackQuery()) {                          //Проверяем может в update передался какой-то айди кнопки ане текст сообщения
+            List<MyButtons> buttonsList = Arrays.asList(new YesButton(messageService), new NoButton(messageService));
+            String buttonId = update.getCallbackQuery().getData();
+            Long chatId = update.getCallbackQuery().getMessage().getChatId();
+            var messageToSend = buttonsList.stream()
+                    .filter(cb -> cb.checkButton(buttonId))
+                    .findFirst()
+                    .map(cb -> cb.process(update))
+                    .orElseGet(() -> EditMessageText.builder().text("Command was not recognized").chatId(chatId).build());
+            executeEditMessage(messageToSend);
         }
     }
 
-    private void startCommandReceived(long chatId, String firstName){   // Вызываем метод когда поступила команда о старте работы
-
-        String answer = EmojiParser.parseToUnicode("Hi, " + firstName + ", nice to meet you " +":jack_o_lantern:");    // Класс для вставки эмоций
-        sendMessage(chatId, answer);                                    // Вызываем метод отправки сообщения
-
-    }
-
-    private void sendMessage(long chatId, String textToSend) {          // Метод отправки сообщения
-        SendMessage message = new SendMessage();                        // Специальный класс для отправки сообщений из библиотеки телеграмботс
-        message.setChatId(String.valueOf(chatId));                      // Телеграм почему-то хочет что бы мы присваивали If исходящему сообщению в String
-        message.setText(textToSend);                                    // Сообщение, которое хотим отправить
-
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup(); //Класс для настройки разметки клавиатуры
-
-        List<KeyboardRow> keyboardRows = new ArrayList<>();
-        KeyboardRow row = new KeyboardRow();
-        row.add("weather");
-        row.add("joke");
-
-        keyboardRows.add(row);
-
-        keyboardMarkup.setKeyboard(keyboardRows);
-        message.setReplyMarkup(keyboardMarkup);
-        executeMessage(message);
-
-
-    }
-
-
-    private void executeEditMessageText(String text, long chatId, long messageId){
-        EditMessageText message = new EditMessageText();       //Класс позволяющий редактировать сообщение зная его айди
-        message.setChatId(String.valueOf(chatId));
-        message.setText(text);
-        message.setMessageId((int)messageId);                  //Говорим что редактировать нужно конкретное сообщение
-        try{
-            execute(message);
+    private void executeEditMessage(EditMessageText editMessageText) {
+        try {
+            execute(editMessageText);
         }
         catch (TelegramApiException tae){
             log.info("Произошла ошибка при отправке сообщения "+ tae.getMessage());
         }
-
-
     }
 
-    private void executeMessage(SendMessage message){
-        try{                                                   // Используем tryCatch при отправке потому что, что-то может пойти не так
+    public void executeMessage(SendMessage message){
+        try{
             execute(message);
         }
         catch (TelegramApiException tae){
@@ -248,9 +139,5 @@ public class TelegramBot extends TelegramLongPollingBot {
                 executeMessage(message);
             }
         }
-    }
-
-    public boolean methodForTestsOnly(){
-        return tbUserRepository.findById(1276509851L).isPresent();
     }
 }
