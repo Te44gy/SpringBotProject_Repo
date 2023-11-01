@@ -1,21 +1,18 @@
 package com.example.srpingbotproject.buttons;
 
 import com.example.srpingbotproject.service.MessageService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
+@RequiredArgsConstructor
 public class NoButton implements MyButtons{
     public static final String NO_BUTTON = "NO_BUTTON";
 
-    final
-    MessageService messageService;
 
-    public NoButton(MessageService messageService) {
-        this.messageService = messageService;
-    }
+    final MessageService messageService;
 
     @Override
     public boolean checkButton(String buttonId) {

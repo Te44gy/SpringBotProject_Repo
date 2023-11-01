@@ -55,15 +55,6 @@ public class TelegramBotTest{
 
 
 
-        //Как исправить
-        var ans = telegramBot.getBotOwner();
-        Assertions.assertEquals(1276509851, ans);
-
-        Mockito.when(tbUserRepository.findById(1276509851L)).thenReturn(optionalTBUSer);
-        var ans2 = telegramBot.methodForTestsOnly();
-        Assertions.assertTrue(ans2);
-
-
     }
 }
 

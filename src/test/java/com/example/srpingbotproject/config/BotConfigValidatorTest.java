@@ -12,8 +12,6 @@ import java.util.List;
 
 public class BotConfigValidatorTest {
 
-
-
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     private final List<String> required = Arrays.asList("name", "token", "owner");
 

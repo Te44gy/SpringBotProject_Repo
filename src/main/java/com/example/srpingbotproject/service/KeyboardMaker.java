@@ -1,57 +1,42 @@
 package com.example.srpingbotproject.service;
 
+import com.example.srpingbotproject.model.CustomButton;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.srpingbotproject.buttons.NoButton.NO_BUTTON;
-import static com.example.srpingbotproject.buttons.YesButton.YES_BUTTON;
-
 @Service
 public class KeyboardMaker {
 
+    static final int NUM_COLUMNS = 2;
 
-    public SendMessage addInlineKeyboardMarkupToMessage(SendMessage sendMessage){
-        InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();     //Класс для создания кнопок под сообщением
-        List<List<InlineKeyboardButton>> rowsInLIne = new ArrayList<>();      //Именно такой лист нужно дать в параметр ".setKeyboard метода"
-        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
-        var yesButton = new InlineKeyboardButton();
-        yesButton.setText("Yes");
-        yesButton.setCallbackData(YES_BUTTON);                 //Это идентификатор, который помогает боту понять какая кнопка была нажата
-        var noButton = new InlineKeyboardButton();
-        noButton.setText("No");
-        noButton.setCallbackData(NO_BUTTON);
+    public InlineKeyboardMarkup addInlineKeyboardMarkupToMessage(List<CustomButton> buttonList){
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
 
-        rowInLine.add(yesButton);
-        rowInLine.add(noButton);
+        var numRows = (int) Math.ceil((double) buttonList.size()/NUM_COLUMNS);  //округляет вверх
 
-        rowsInLIne.add(rowInLine);
+        for(int row=0; row < numRows; row++){
+            int start = row*NUM_COLUMNS;
+            int end = Math.min(start+NUM_COLUMNS, buttonList.size());
 
-        keyboardMarkup.setKeyboard(rowsInLIne);
-        sendMessage.setReplyMarkup(keyboardMarkup);            //Выставить разметку кнопок для сообщения
-        return sendMessage;
-    }
+            List<InlineKeyboardButton> currentRow = new ArrayList<>();
 
+            for(int j = start; j<end; j++){
+                CustomButton buttonFromList = buttonList.get(j);
+                InlineKeyboardButton buttonOnKeyBoard = InlineKeyboardButton.builder()
+                        .text(buttonFromList.getText())
+                        .callbackData(buttonFromList.getCallbackData())
+                        .build();
+                currentRow.add(buttonOnKeyBoard);
+            }
+            rows.add(currentRow);
+        }
+        markupInLine.setKeyboard(rows);
 
-    public SendMessage addReplyKeyboardMarkupToMessage(SendMessage sendMessage) {
-
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();                //Класс для настройки разметки клавиатуры
-
-        List<KeyboardRow> keyboardRows = new ArrayList<>();
-        KeyboardRow row = new KeyboardRow();
-        row.add("/start");
-        row.add("/help");
-
-        keyboardRows.add(row);
-
-        keyboardMarkup.setKeyboard(keyboardRows);
-        sendMessage.setReplyMarkup(keyboardMarkup);
-        return sendMessage;
+    return markupInLine;
     }
 }

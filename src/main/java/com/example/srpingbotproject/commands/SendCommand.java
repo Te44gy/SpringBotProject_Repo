@@ -2,28 +2,23 @@ package com.example.srpingbotproject.commands;
 
 import com.example.srpingbotproject.config.BotConfig;
 import com.example.srpingbotproject.model.TBUser;
-import com.example.srpingbotproject.model.reps.TBUserRepository;
-import com.example.srpingbotproject.service.TelegramBot;
+import com.example.srpingbotproject.service.reposervices.TBUserService;
 import com.vdurmont.emoji.EmojiParser;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class SendCommand implements MyBotCommand {
     final BotConfig botConfig;
-    final TBUserRepository tbUserRepository;
-    final TelegramBot telegramBot;
-
-    public SendCommand(BotConfig botConfig, TBUserRepository tbUserRepository, TelegramBot telegramBot) {
-        this.botConfig = botConfig;
-        this.tbUserRepository = tbUserRepository;
-        this.telegramBot = telegramBot;
-    }
+    final TBUserService tbUserService;
 
 
     @Override
@@ -32,27 +27,31 @@ public class SendCommand implements MyBotCommand {
     }
 
     @Override
-    public SendMessage process(Update update) {
+    public List<SendMessage> process(Update update) {
         String textMessage = update.getMessage().getText();
         Long chatId = update.getMessage().getChatId();
         Long owner = Long.valueOf(botConfig.getOwner());
-        SendMessage message = new SendMessage();
-        message.setChatId(chatId);
+        List<SendMessage> sendMessageList = new ArrayList<>();
 
         if (chatId.equals(owner)) {
-            var textToSend = EmojiParser.parseToUnicode(textMessage.substring(5));
-            var users = tbUserRepository.findAll();
+            var textToSend = EmojiParser.parseToUnicode(textMessage.substring("/send".length()));
+            var users = tbUserService.getAllTBUsers();
+
             for (TBUser user : users) {
-                message.setText(textToSend);
-                message.setChatId(user.getChatId());
-                telegramBot.executeMessage(message);
+                sendMessageList.add(SendMessage.builder()
+                        .chatId(user.getChatId())
+                        .text(textToSend)
+                        .build());
             }
-            message.setText("Message has been send");
-            return message;
+            return sendMessageList;
 
         }
-        message.setText("Command was not recognized");
-        return message;
+
+        sendMessageList.add(SendMessage.builder()
+                .chatId(chatId)
+                .text("Command was not recognized")
+                .build());
+        return sendMessageList;
     }
 }
 

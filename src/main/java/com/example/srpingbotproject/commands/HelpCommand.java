@@ -1,10 +1,14 @@
 package com.example.srpingbotproject.commands;
 
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.List;
+
+@Component
 public class HelpCommand implements MyBotCommand {
-    static final String HELP_TEXT = "This bot is created to demonstrated Spring capabilities\n\n"+
+    public static final String HELP_TEXT = "This bot is created to demonstrated Spring capabilities\n\n"+
             "press menu to see all available commands";
 
     @Override
@@ -13,11 +17,11 @@ public class HelpCommand implements MyBotCommand {
     }
 
     @Override
-    public SendMessage process(Update update) {
-        SendMessage message = new SendMessage();
+    public List<SendMessage> process(Update update) {
         Long chatId = update.getMessage().getChatId();
-        message.setText(HELP_TEXT);
-        message.setChatId(String.valueOf(chatId));
-        return message;
+        return List.of(SendMessage.builder()
+                .text(HELP_TEXT)
+                .chatId(chatId)
+                .build());
     }
 }
