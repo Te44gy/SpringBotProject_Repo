@@ -35,8 +35,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final TBUserRepository tbUserRepository;
     private final AdsRepository adsRepository;
     private final BotConfig botConfig;
-    private final KeyboardMaker keyboardMaker;
-    private final MessageService messageService;
     private final List<MyBotCommand> myBotCommandList;
     private final List<MyButtons> myButtonsList;
 
@@ -70,7 +68,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                             .description("yes and no buttons")
                             .build())
                     .build();
-            execute(commands);                           //вопрос: команды всё ровно не вставляются
+            execute(commands);                           //todo вопрос: команды всё ровно не вставляются
 
 
         } catch (TelegramApiException tae) {
@@ -101,12 +99,13 @@ public class TelegramBot extends TelegramLongPollingBot {
         (update.hasCallbackQuery()) {                          //Проверяем может в update передался какой-то айди кнопки, а не текст сообщения
             String buttonId = update.getCallbackQuery().getData();
             Long chatId = update.getCallbackQuery().getMessage().getChatId();
+            log.info(buttonId);
             var messageToSend = myButtonsList.stream()
                     .filter(cb -> cb.checkButton(buttonId))
                     .findFirst()
                     .map(cb -> cb.process(update))
                     .orElseGet(() -> EditMessageText.builder().text("Command was not recognized").chatId(chatId).build());
-            executeEditMessage(messageToSend);
+                executeEditMessage(messageToSend);
         }
     }
 

@@ -8,7 +8,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 
 @Service
-@Component
 @Slf4j
 public class MessageService {
     public EditMessageText editMassage(String textMassage ,Update update){

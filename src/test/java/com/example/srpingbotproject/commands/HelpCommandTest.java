@@ -1,6 +1,5 @@
-package com.example.srpingbotproject.buttons;
+package com.example.srpingbotproject.commands;
 
-import com.example.srpingbotproject.commands.HelpCommand;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

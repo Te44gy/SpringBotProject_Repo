@@ -1,6 +1,5 @@
-package com.example.srpingbotproject.buttons;
+package com.example.srpingbotproject.commands;
 
-import com.example.srpingbotproject.commands.SendCommand;
 import com.example.srpingbotproject.config.BotConfig;
 import com.example.srpingbotproject.model.TBUser;
 import com.example.srpingbotproject.service.reposervices.TBUserService;
