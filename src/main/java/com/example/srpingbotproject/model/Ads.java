@@ -2,7 +2,6 @@ package com.example.srpingbotproject.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Entity
 @Data

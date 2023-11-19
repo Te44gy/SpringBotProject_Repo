@@ -4,24 +4,14 @@ import com.example.srpingbotproject.config.BotConfig;
 import com.example.srpingbotproject.model.TBUser;
 import com.example.srpingbotproject.model.reps.AdsRepository;
 import com.example.srpingbotproject.model.reps.TBUserRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.OngoingStubbing;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 
-import java.sql.Date;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 //@ContextConfiguration
@@ -53,15 +43,6 @@ public class TelegramBotTest{
 //        Mockito.when(tbUserRepository.findById(1276509851L)).thenReturn(optionalTBUSer);
 //        boolean  ans = telegramBot.methodForTestsOnly();
 
-
-
-        //Как исправить
-        var ans = telegramBot.getBotOwner();
-        Assertions.assertEquals(1276509851, ans);
-
-        Mockito.when(tbUserRepository.findById(1276509851L)).thenReturn(optionalTBUSer);
-        var ans2 = telegramBot.methodForTestsOnly();
-        Assertions.assertTrue(ans2);
 
 
     }

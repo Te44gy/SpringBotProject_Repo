@@ -5,18 +5,24 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class BotConfigValidatorTest {
 
-
-
-    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    private static Validator validator;
     private final List<String> required = Arrays.asList("name", "token", "owner");
 
+    @BeforeAll
+    static void init(){
+        LocaleContextHolder.setDefaultLocale(Locale.ENGLISH);
+        validator = Validation.buildDefaultValidatorFactory().getValidator();
+    }
 
     @Test
     public void testBotConfig(){
@@ -31,7 +37,7 @@ public class BotConfigValidatorTest {
         errors = validator.validate(properties);
         ConstraintViolation[] constraintViolations  = errors.toArray(x -> new ConstraintViolation[x]);
         for(ConstraintViolation violation : constraintViolations){
-            Assertions.assertEquals("не должно быть пустым", violation.getMessage());   //? Не понимаю почему ошибка на русском пишется
+            Assertions.assertEquals("не должно быть пустым", violation.getMessage());
             Assertions.assertTrue(required.contains(violation.getPropertyPath().toString()));
         }
 

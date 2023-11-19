@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class SpringBotProjectApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(SpringBotProjectApplication.class, args);
 	}
 
